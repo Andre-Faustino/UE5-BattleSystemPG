@@ -22,7 +22,7 @@ public:
 	
 protected:	
 
-	APawn* thisPawn;
+	//APawn* thisPawn;
 
 	virtual void SetupInputComponent() override;
 	

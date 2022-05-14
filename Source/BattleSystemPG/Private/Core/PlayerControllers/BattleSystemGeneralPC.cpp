@@ -24,48 +24,35 @@ void ABattleSystemGeneralPC::SetupInputComponent() {
 
 void ABattleSystemGeneralPC::MoveCameraHorizontally(float Val)
 {
-	if (Val != 0.f) {
-		thisPawn = GetPawn();
-		if (thisPawn != nullptr) {
-			thisPawn->AddMovementInput(thisPawn->GetActorRightVector(), Val);
-		}
+	if (Val != 0.f && GetPawn() != nullptr) {
+		GetPawn()->AddMovementInput(GetPawn()->GetActorRightVector(), Val);		
 	}
 }
 
 void ABattleSystemGeneralPC::MoveCameraVertically(float Val)
 {
-	if (Val != 0.f) {
-		thisPawn = GetPawn();
-		if (thisPawn != nullptr) {
-			thisPawn->AddMovementInput(thisPawn->GetActorForwardVector(), Val);
-		}
+	if (Val != 0.f && GetPawn() != nullptr) {
+		GetPawn()->AddMovementInput(GetPawn()->GetActorForwardVector(), Val);	
 	}
 }
 
 void ABattleSystemGeneralPC::RotateCameraHorizontally(float Val)
 {
-	if (Val != 0.f) {
-		thisPawn = GetPawn();
-		if (thisPawn != nullptr) {
-			thisPawn->AddControllerYawInput(Val);
-		}
+	if (Val != 0.f && GetPawn() != nullptr) {
+		GetPawn()->AddControllerYawInput(Val);	
 	}
 }
 
 void ABattleSystemGeneralPC::RotateCameraVertically(float Val)
 {
-	if (Val != 0.f) {
-		thisPawn = GetPawn();
-		if (thisPawn != nullptr) {
-			USpringArmComponent* springArm = thisPawn->FindComponentByClass<USpringArmComponent>();
-			if (springArm != nullptr 
-				&& springArm->GetRelativeRotation().Pitch + Val < 0
-				&& springArm->GetRelativeRotation().Pitch + Val > -90)
-			{			
-				springArm->AddRelativeRotation(FRotator(Val, 0, 0));
-			}
-			
-		}
+	if (Val != 0.f && GetPawn() != nullptr) {
+		USpringArmComponent* springArm = GetPawn()->FindComponentByClass<USpringArmComponent>();
+		if (springArm != nullptr 
+			&& springArm->GetRelativeRotation().Pitch + Val < 0
+			&& springArm->GetRelativeRotation().Pitch + Val > -90)
+		{			
+			springArm->AddRelativeRotation(FRotator(Val, 0, 0));
+		}	
 	}
 }
 
