@@ -5,41 +5,111 @@
 #include "Components/InputComponent.h"
 #include "GameFramework/InputSettings.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "BattleSystemPG/Public/Core/GameModes/BattleSystemGM.h"
+#include "BattleSystemPG/Public/Core/Characters/RootBattleSystemCharacter.h"
+#include "Engine/World.h"
+#include "GameFramework/Actor.h"
 
 ABattleSystemGeneralPC::ABattleSystemGeneralPC()
 {
+	
+}
+void ABattleSystemGeneralPC::BeginPlay()
+{
+	Super::BeginPlay();
+
+	bIsMovingToActor = false;
+
+	if (GetWorld()->GetAuthGameMode() != nullptr) {
+		BattleSystemGameMode = Cast<ABattleSystemGM>(GetWorld()->GetAuthGameMode());
+	}
+}
+void ABattleSystemGeneralPC::Tick(float DeltaTime)
+{
+	// Handle Camera Movement
+	if (bIsMovingToActor){
+		if (selectedActorTarget != nullptr) {
+			InputMovementToActorLocation(selectedActorTarget);
+		}
+	}
 
 }
+
 void ABattleSystemGeneralPC::SetupInputComponent() {
 
 	// set up gameplay key bindings
 	Super::SetupInputComponent();
 
-	InputComponent->BindAxis("MoveCameraHorizontal", this, &ABattleSystemGeneralPC::MoveCameraHorizontally);
-	InputComponent->BindAxis("MoveCameraVertical", this, &ABattleSystemGeneralPC::MoveCameraVertically);
-	InputComponent->BindAxis("RotateCameraHorizontal", this, &ABattleSystemGeneralPC::RotateCameraHorizontally);
-	InputComponent->BindAxis("RotateCameraVertical", this, &ABattleSystemGeneralPC::RotateCameraVertically);
+	InputComponent->BindAxis("MoveCameraHorizontal", this, &ABattleSystemGeneralPC::MoveCameraHorizontallyCommand);
+	InputComponent->BindAxis("MoveCameraVertical", this, &ABattleSystemGeneralPC::MoveCameraVerticallyCommand);
+	InputComponent->BindAxis("RotateCameraHorizontal", this, &ABattleSystemGeneralPC::RotateCameraHorizontallyCommand);
+	InputComponent->BindAxis("RotateCameraVertical", this, &ABattleSystemGeneralPC::RotateCameraVerticallyCommand);
 
+	InputComponent->BindAction("NextEnemy", IE_Pressed, this, &ABattleSystemGeneralPC::SelectNextEnemy);
+	InputComponent->BindAction("PrevioustEnemy", IE_Pressed, this, &ABattleSystemGeneralPC::SelectPreviousEnemy); 
 }
+
+//=============================================
+// Input handle funtions
+
+void ABattleSystemGeneralPC::MoveCameraHorizontallyCommand(float Val)
+{
+	MoveCameraHorizontally(Val);
+}
+
+void ABattleSystemGeneralPC::MoveCameraVerticallyCommand(float Val)
+{
+	MoveCameraVertically(Val);
+}
+
+void ABattleSystemGeneralPC::RotateCameraHorizontallyCommand(float Val)
+{
+	RotateCameraHorizontally(Val);
+}
+
+void ABattleSystemGeneralPC::RotateCameraVerticallyCommand(float Val)
+{
+	RotateCameraVertically(Val);
+}
+
+void ABattleSystemGeneralPC::SelectNextEnemy()
+{
+	selectedEnemy = BattleSystemGameMode->selectNextEnemyRef();
+	selectedActorTarget = selectedEnemy;
+	bIsMovingToActor = true;
+	UE_LOG(LogTemp, Warning, TEXT("Enemy: %d"), selectedEnemy->GetUniqueID());
+}
+
+void ABattleSystemGeneralPC::SelectPreviousEnemy()
+{
+	selectedEnemy = BattleSystemGameMode->selectPreviousEnemyRef();
+	selectedActorTarget = selectedEnemy;
+	bIsMovingToActor = true;
+	UE_LOG(LogTemp, Warning, TEXT("Enemy: %d"), selectedEnemy->GetUniqueID());
+}
+
+
+//=============================================
+// Camera Mechanism Functions
 
 void ABattleSystemGeneralPC::MoveCameraHorizontally(float Val)
 {
 	if (Val != 0.f && GetPawn() != nullptr) {
-		GetPawn()->AddMovementInput(GetPawn()->GetActorRightVector(), Val);		
+		GetPawn()->AddMovementInput(GetPawn()->GetActorRightVector(), Val);
 	}
 }
 
 void ABattleSystemGeneralPC::MoveCameraVertically(float Val)
 {
 	if (Val != 0.f && GetPawn() != nullptr) {
-		GetPawn()->AddMovementInput(GetPawn()->GetActorForwardVector(), Val);	
+		GetPawn()->AddMovementInput(GetPawn()->GetActorForwardVector(), Val);
 	}
 }
 
 void ABattleSystemGeneralPC::RotateCameraHorizontally(float Val)
 {
 	if (Val != 0.f && GetPawn() != nullptr) {
-		GetPawn()->AddControllerYawInput(Val);	
+		GetPawn()->AddControllerYawInput(Val);
 	}
 }
 
@@ -47,13 +117,32 @@ void ABattleSystemGeneralPC::RotateCameraVertically(float Val)
 {
 	if (Val != 0.f && GetPawn() != nullptr) {
 		USpringArmComponent* springArm = GetPawn()->FindComponentByClass<USpringArmComponent>();
-		if (springArm != nullptr 
+		if (springArm != nullptr
 			&& springArm->GetRelativeRotation().Pitch + Val < 0
 			&& springArm->GetRelativeRotation().Pitch + Val > -90)
-		{			
+		{
 			springArm->AddRelativeRotation(FRotator(Val, 0, 0));
-		}	
+		}
 	}
 }
 
+void ABattleSystemGeneralPC::InputMovementToActorLocation(AActor* targetActor)
+{
+	FVector targetActorLocation = targetActor->GetActorLocation() - GetPawn()->GetActorLocation();
+
+	float floatingBoundToAttach = 1.f;
+	if (targetActorLocation.X < floatingBoundToAttach
+		&& targetActorLocation.X > -floatingBoundToAttach
+		&& targetActorLocation.Y < floatingBoundToAttach
+		&& targetActorLocation.Y > -floatingBoundToAttach
+		)
+	{
+		GetPawn()->AttachToComponent(targetActor->GetRootComponent(), FAttachmentTransformRules::KeepWorldTransform);
+		bIsMovingToActor = false;
+		//UE_LOG(LogTemp, Warning, TEXT("Attach"));
+		return;
+	}
+	GetPawn()->AddMovementInput(targetActorLocation, EnemyFollowMovimentSpeed);
+	//UE_LOG(LogTemp, Warning, TEXT("FVECTOR -> %f, %f, %f"), targetActorLocation.X, targetActorLocation.Y, targetActorLocation.Z);
+}
 
