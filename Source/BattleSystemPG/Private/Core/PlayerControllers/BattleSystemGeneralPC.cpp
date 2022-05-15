@@ -23,6 +23,9 @@ void ABattleSystemGeneralPC::BeginPlay()
 
 	if (GetPawn() != nullptr) {
 		cameraPawn = Cast<ACharacter>(GetPawn());
+		USpringArmComponent* springArm = cameraPawn->FindComponentByClass<USpringArmComponent>();
+		springArm->bEnableCameraLag = true;
+		springArm->CameraLagSpeed = TargetSwitchTransitionTime;
 	}
 
 	if (GetWorld()->GetAuthGameMode() != nullptr) {

@@ -18,9 +18,9 @@ public:
 	
 	ABattleSystemGeneralPC();
 
-	/** Speed of camera transition to enemy target */
+	/** Time to camera reach target's location, the higher the slower */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = CameraConfiguration)
-	float EnemyFollowMovimentSpeed;
+	float TargetSwitchTransitionTime = 4.f;
 	
 protected:	
 
