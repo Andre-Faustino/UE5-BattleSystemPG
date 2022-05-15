@@ -20,7 +20,7 @@ public:
 
 	/** Speed of camera transition to enemy target */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = CameraConfiguration)
-	float EnemyFollowMovimentSpeed = 1.f;
+	float EnemyFollowMovimentSpeed;
 	
 protected:	
 
@@ -51,8 +51,8 @@ protected:
 	//=============================================
 	// Camera Mechanism Functions
 
-	bool bIsMovingToActor;
 	AActor* selectedActorTarget;
+	ACharacter* cameraPawn;
 
 	void MoveCameraHorizontally(float Val);
 	void MoveCameraVertically(float Val);

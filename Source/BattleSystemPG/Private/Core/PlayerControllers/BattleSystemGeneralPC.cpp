@@ -9,6 +9,8 @@
 #include "BattleSystemPG/Public/Core/Characters/RootBattleSystemCharacter.h"
 #include "Engine/World.h"
 #include "GameFramework/Actor.h"
+#include "GameFramework/SpringArmComponent.h"
+#include "GameFramework/Character.h"
 
 ABattleSystemGeneralPC::ABattleSystemGeneralPC()
 {
@@ -18,7 +20,10 @@ void ABattleSystemGeneralPC::BeginPlay()
 {
 	Super::BeginPlay();
 
-	bIsMovingToActor = false;
+
+	if (GetPawn() != nullptr) {
+		cameraPawn = Cast<ACharacter>(GetPawn());
+	}
 
 	if (GetWorld()->GetAuthGameMode() != nullptr) {
 		BattleSystemGameMode = Cast<ABattleSystemGM>(GetWorld()->GetAuthGameMode());
@@ -26,12 +31,7 @@ void ABattleSystemGeneralPC::BeginPlay()
 }
 void ABattleSystemGeneralPC::Tick(float DeltaTime)
 {
-	// Handle Camera Movement
-	if (bIsMovingToActor){
-		if (selectedActorTarget != nullptr) {
-			InputMovementToActorLocation(selectedActorTarget);
-		}
-	}
+	
 
 }
 
@@ -76,7 +76,7 @@ void ABattleSystemGeneralPC::SelectNextEnemy()
 {
 	selectedEnemy = BattleSystemGameMode->selectNextEnemyRef();
 	selectedActorTarget = selectedEnemy;
-	bIsMovingToActor = true;
+	InputMovementToActorLocation(selectedActorTarget);
 	UE_LOG(LogTemp, Warning, TEXT("Enemy: %d"), selectedEnemy->GetUniqueID());
 }
 
@@ -84,7 +84,7 @@ void ABattleSystemGeneralPC::SelectPreviousEnemy()
 {
 	selectedEnemy = BattleSystemGameMode->selectPreviousEnemyRef();
 	selectedActorTarget = selectedEnemy;
-	bIsMovingToActor = true;
+	InputMovementToActorLocation(selectedActorTarget);
 	UE_LOG(LogTemp, Warning, TEXT("Enemy: %d"), selectedEnemy->GetUniqueID());
 }
 
@@ -94,29 +94,31 @@ void ABattleSystemGeneralPC::SelectPreviousEnemy()
 
 void ABattleSystemGeneralPC::MoveCameraHorizontally(float Val)
 {
-	if (Val != 0.f && GetPawn() != nullptr) {
-		GetPawn()->AddMovementInput(GetPawn()->GetActorRightVector(), Val);
+	if (Val != 0.f && cameraPawn != nullptr) {
+		cameraPawn->AddMovementInput(cameraPawn->GetActorRightVector(), Val);
+		cameraPawn->GetRootComponent()->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
 	}
 }
 
 void ABattleSystemGeneralPC::MoveCameraVertically(float Val)
 {
-	if (Val != 0.f && GetPawn() != nullptr) {
-		GetPawn()->AddMovementInput(GetPawn()->GetActorForwardVector(), Val);
+	if (Val != 0.f && cameraPawn != nullptr) {
+		cameraPawn->AddMovementInput(cameraPawn->GetActorForwardVector(), Val);
+		cameraPawn->GetRootComponent()->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
 	}
 }
 
 void ABattleSystemGeneralPC::RotateCameraHorizontally(float Val)
 {
-	if (Val != 0.f && GetPawn() != nullptr) {
-		GetPawn()->AddControllerYawInput(Val);
+	if (Val != 0.f && cameraPawn != nullptr) {
+		cameraPawn->AddControllerYawInput(Val);
 	}
 }
 
 void ABattleSystemGeneralPC::RotateCameraVertically(float Val)
 {
-	if (Val != 0.f && GetPawn() != nullptr) {
-		USpringArmComponent* springArm = GetPawn()->FindComponentByClass<USpringArmComponent>();
+	if (Val != 0.f && cameraPawn != nullptr) {
+		USpringArmComponent* springArm = cameraPawn->FindComponentByClass<USpringArmComponent>();
 		if (springArm != nullptr
 			&& springArm->GetRelativeRotation().Pitch + Val < 0
 			&& springArm->GetRelativeRotation().Pitch + Val > -90)
@@ -128,21 +130,8 @@ void ABattleSystemGeneralPC::RotateCameraVertically(float Val)
 
 void ABattleSystemGeneralPC::InputMovementToActorLocation(AActor* targetActor)
 {
-	FVector targetActorLocation = targetActor->GetActorLocation() - GetPawn()->GetActorLocation();
+	cameraPawn->SetActorLocation(targetActor->GetActorLocation());
+	cameraPawn->AttachToComponent(targetActor->GetRootComponent(), FAttachmentTransformRules::KeepWorldTransform);
 
-	float floatingBoundToAttach = 1.f;
-	if (targetActorLocation.X < floatingBoundToAttach
-		&& targetActorLocation.X > -floatingBoundToAttach
-		&& targetActorLocation.Y < floatingBoundToAttach
-		&& targetActorLocation.Y > -floatingBoundToAttach
-		)
-	{
-		GetPawn()->AttachToComponent(targetActor->GetRootComponent(), FAttachmentTransformRules::KeepWorldTransform);
-		bIsMovingToActor = false;
-		//UE_LOG(LogTemp, Warning, TEXT("Attach"));
-		return;
-	}
-	GetPawn()->AddMovementInput(targetActorLocation, EnemyFollowMovimentSpeed);
-	//UE_LOG(LogTemp, Warning, TEXT("FVECTOR -> %f, %f, %f"), targetActorLocation.X, targetActorLocation.Y, targetActorLocation.Z);
 }
 
