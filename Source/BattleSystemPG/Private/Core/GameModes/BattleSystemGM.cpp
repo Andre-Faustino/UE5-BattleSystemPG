@@ -11,7 +11,7 @@ void ABattleSystemGM::StartPlay()
 	Super::StartPlay();
 		
 	SetupAllEnemys();
-	
+	SetupAllAllies();
 }
 
 //====================================================
@@ -20,16 +20,31 @@ void ABattleSystemGM::StartPlay()
 void ABattleSystemGM::SetupAllEnemys() {
 
 	TArray<AActor*> enemyActorReferences;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ARootBattleSystemCharacter::StaticClass(), enemyActorReferences);
+	//TODO: Change this Tag implementation when allies and enemies have it's own subclasses  
+	UGameplayStatics::GetAllActorsOfClassWithTag
+		(GetWorld(), ARootBattleSystemCharacter::StaticClass(), "enemy", enemyActorReferences);
 
 	for (AActor* enemyActor : enemyActorReferences) {
 		if (ARootBattleSystemCharacter* enemyReference = Cast<ARootBattleSystemCharacter>(enemyActor)) {
-			enemysReferences.Push(enemyReference);
+			enemiesReferences.Push(enemyReference);
 		}
 	}
+	UE_LOG(LogTemp, Warning, TEXT("NUMBER OF ENEMYS: %d"), enemiesReferences.Num());	
+}
 
-	UE_LOG(LogTemp, Warning, TEXT("NUMBER OF ENEMYS: %d"), enemysReferences.Num());
-	
+void ABattleSystemGM::SetupAllAllies()
+{
+	TArray<AActor*> alliesActorReferences;
+	//TODO: Change this Tag implementation when allies and enemies have it's own subclasses  
+	UGameplayStatics::GetAllActorsOfClassWithTag
+	(GetWorld(), ARootBattleSystemCharacter::StaticClass(), "ally", alliesActorReferences);
+
+	for (AActor* allyActor : alliesActorReferences) {
+		if (ARootBattleSystemCharacter* allyReference = Cast<ARootBattleSystemCharacter>(allyActor)) {
+			alliesReferences.Push(allyReference);
+		}
+	}
+	UE_LOG(LogTemp, Warning, TEXT("NUMBER OF ALLIES: %d"), enemiesReferences.Num());
 }
 
 
@@ -37,10 +52,10 @@ void ABattleSystemGM::SetupAllEnemys() {
 //====================================================
 // Exposed Functions
 
-TArray<ARootBattleSystemCharacter*> ABattleSystemGM::getSelectableEnemysReferences()
+TArray<ARootBattleSystemCharacter*> ABattleSystemGM::getSelectableEnemiesReferences()
 {
 	// TODO: This must only return selectable enemys for the camera
-	return enemysReferences;
+	return enemiesReferences;
 }
 
 ARootBattleSystemCharacter* ABattleSystemGM::getSelectedEnemyRef()
@@ -66,22 +81,22 @@ ARootBattleSystemCharacter* ABattleSystemGM::ChangeEnemyRef(int direction)
 	int32 selectedEnemyIndex;
 
 	if (selectedEnemyRef != nullptr
-		&& enemysReferences.Find(selectedEnemyRef, selectedEnemyIndex))
+		&& enemiesReferences.Find(selectedEnemyRef, selectedEnemyIndex))
 	{
 		// TODO Needs a Util to wrap this silly logic to get the next element without worrying about OutBoundaries
 		if (direction == 1) {
-			selectedEnemyRef = (selectedEnemyIndex == enemysReferences.Num() - 1)
-				? enemysReferences[0] : enemysReferences[selectedEnemyIndex + direction];
+			selectedEnemyRef = (selectedEnemyIndex == enemiesReferences.Num() - 1)
+				? enemiesReferences[0] : enemiesReferences[selectedEnemyIndex + direction];
 		}
 		else {
 			selectedEnemyRef = (selectedEnemyIndex == 0)
-				? enemysReferences.Last() : enemysReferences[selectedEnemyIndex + direction];
+				? enemiesReferences.Last() : enemiesReferences[selectedEnemyIndex + direction];
 		}
 		return selectedEnemyRef;
 	}
 	else
 	{
-		selectedEnemyRef = enemysReferences[0];
+		selectedEnemyRef = enemiesReferences[0];
 		return selectedEnemyRef;
 	}
 }

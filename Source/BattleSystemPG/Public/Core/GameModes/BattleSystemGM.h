@@ -19,7 +19,7 @@ public:
 	//====================================================
 	// Exposed Functions
 
-	TArray<class ARootBattleSystemCharacter*> getSelectableEnemysReferences();
+	TArray<class ARootBattleSystemCharacter*> getSelectableEnemiesReferences();
 	class ARootBattleSystemCharacter* getSelectedEnemyRef();
 	class ARootBattleSystemCharacter* selectNextEnemyRef();
 	class ARootBattleSystemCharacter* selectPreviousEnemyRef();
@@ -29,7 +29,8 @@ public:
 
 protected:
 	
-	TArray<class ARootBattleSystemCharacter*> enemysReferences;
+	TArray<class ARootBattleSystemCharacter*> enemiesReferences;
+	TArray<class ARootBattleSystemCharacter*> alliesReferences;
 	class ARootBattleSystemCharacter* selectedEnemyRef;
 
 	virtual void StartPlay() override;
@@ -38,6 +39,7 @@ protected:
 	// Setting up Battle System Functions
 
 	void SetupAllEnemys();
+	void SetupAllAllies();
 
 	//====================================================
 	// Internal Battle System Functions
