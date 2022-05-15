@@ -6,6 +6,7 @@
 #include "GameFramework/GameModeBase.h"
 #include "BattleSystemGM.generated.h"
 
+
 /**
  * 
  */
@@ -24,13 +25,16 @@ public:
 	class ARootBattleSystemCharacter* selectNextEnemyRef();
 	class ARootBattleSystemCharacter* selectPreviousEnemyRef();
 
+	class ARootBattleSystemCharacter* getAllyRefByPosition(int8 position);
+	int8 getPositionOfAllyRef(ARootBattleSystemCharacter* ally);
+
 
 
 
 protected:
 	
 	TArray<class ARootBattleSystemCharacter*> enemiesReferences;
-	TArray<class ARootBattleSystemCharacter*> alliesReferences;
+	TMap<int8,class ARootBattleSystemCharacter* > alliesReferences;
 	class ARootBattleSystemCharacter* selectedEnemyRef;
 
 	virtual void StartPlay() override;

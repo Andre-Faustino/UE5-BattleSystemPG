@@ -34,14 +34,16 @@ void ABattleSystemGM::SetupAllEnemys() {
 
 void ABattleSystemGM::SetupAllAllies()
 {
+	
 	TArray<AActor*> alliesActorReferences;
 	//TODO: Change this Tag implementation when allies and enemies have it's own subclasses  
 	UGameplayStatics::GetAllActorsOfClassWithTag
 	(GetWorld(), ARootBattleSystemCharacter::StaticClass(), "ally", alliesActorReferences);
-
+	int countPosition = 1;
 	for (AActor* allyActor : alliesActorReferences) {
 		if (ARootBattleSystemCharacter* allyReference = Cast<ARootBattleSystemCharacter>(allyActor)) {
-			alliesReferences.Push(allyReference);
+			alliesReferences.Add(countPosition, allyReference);
+			countPosition++;
 		}
 	}
 	UE_LOG(LogTemp, Warning, TEXT("NUMBER OF ALLIES: %d"), enemiesReferences.Num());
@@ -71,6 +73,17 @@ ARootBattleSystemCharacter* ABattleSystemGM::selectNextEnemyRef()
 ARootBattleSystemCharacter* ABattleSystemGM::selectPreviousEnemyRef()
 {
 	return ChangeEnemyRef(-1);
+}
+
+ARootBattleSystemCharacter* ABattleSystemGM::getAllyRefByPosition(int8 position)
+{
+	return (alliesReferences.Contains(position)) 
+		? * alliesReferences.Find(position) : nullptr;
+}
+
+int8 ABattleSystemGM::getPositionOfAllyRef(ARootBattleSystemCharacter* ally)
+{
+	return *alliesReferences.FindKey(ally);
 }
 
 //====================================================
