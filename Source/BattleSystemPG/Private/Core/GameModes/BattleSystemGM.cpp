@@ -89,6 +89,7 @@ int8 ABattleSystemGM::getPositionOfAllyRef(ARootBattleSystemCharacter* ally)
 //====================================================
 // Internal Battle System Functions
 
+//TOD direction will be enum
 ARootBattleSystemCharacter* ABattleSystemGM::ChangeEnemyRef(int direction)
 {
 	int32 selectedEnemyIndex;
