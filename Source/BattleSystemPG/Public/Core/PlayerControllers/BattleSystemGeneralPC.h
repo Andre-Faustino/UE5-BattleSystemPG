@@ -3,6 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "EnhancedInput/Public/InputActionValue.h"
+#include "BSInputHandler.h"
 #include "GameFramework/PlayerController.h"
 #include "BattleSystemGeneralPC.generated.h"
 
@@ -18,6 +20,9 @@ public:
 	
 	ABattleSystemGeneralPC();
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Enhanced Input")
+	TSubclassOf<UBSInputHandler> InputConfig;
+
 	/** Time to camera reach target's location, the higher the slower */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = CameraConfiguration)
 	float TargetSwitchTransitionTime = 4.f;
@@ -28,26 +33,20 @@ protected:
 	class ABattleSystemGM* BattleSystemGameMode;
 
 	class ARootBattleSystemCharacter* selectedEnemy;
-	class ARootBattleSystemCharacter* currentlySelectedAlly;
+	class ARootBattleSystemCharacter* currentSelectedAlly;
 
 	//=============================================
-	// Setting up funtions
+	// Setting up functions
 
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
 
-
 	virtual void SetupInputComponent() override;
-	void FreeInputState();
-	void SelectedAllyInputState(int8 position);
 
 	//=============================================
 	// Input handle funtions
 
-	void MoveCameraHorizontallyCommand(float Val);
-	void MoveCameraVerticallyCommand(float Val);
-	void RotateCameraHorizontallyCommand(float Val);
-	void RotateCameraVerticallyCommand(float Val);
+public:
 
 	void SelectFirstAllyCommand();
 	void SelectSecondAllyCommand();
@@ -59,18 +58,14 @@ protected:
 	void SelectNextEnemy();
 	void SelectPreviousEnemy();
 
-
 	//=============================================
 	// Camera Mechanism Functions
-
 	AActor* selectedActorTarget;
 	ACharacter* cameraPawn;
 	bool bIsCameraFree;
 
-	void MoveCameraHorizontally(float Val);
-	void MoveCameraVertically(float Val);
-	void RotateCameraHorizontally(float Val);
-	void RotateCameraVertically(float Val);
+	void MoveCamera(const FVector2D& Value);
+	void RotateCamera(const FVector2D& Value);
 
 	void InputCameraMovementToActorLocation(AActor* targetActor);
 
